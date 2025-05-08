@@ -7,6 +7,9 @@ import axios from "axios";
 import customerRouter from './routes/customerRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import preview from './routes/previewSegmentRouter.js';
+import campaignRouter from "./routes/campaignRoute.js"
+import vendorRouter from "./routes/vendorRoute.js"
+import mockVendorRouter from "./routes/mockVendorRoute.js"
 
 dotenv.config();
 const app = express();
@@ -26,6 +29,9 @@ app.use(
 app.use("/api/customers", customerRouter)
 app.use("/api/orders", orderRouter)
 app.use("/api/campaigns", preview)
+app.use("/api/newcampaign",campaignRouter)
+app.use("/api/vendor", vendorRouter) // for receipt 
+app.use("/api/vendor", mockVendorRouter) // for sending
 
 app.get("/", (req, res) => {
     res.send({ success: true, message: "server up!" });

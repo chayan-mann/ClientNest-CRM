@@ -10,14 +10,16 @@ const mongoOperators = {
   };
   
   export function buildCondition(condition) {
-    const { field, operator, value } = condition;
+    const { field,key, operator, value } = condition;
+    const fieldName = field || key;
+
     const mongoOp = mongoOperators[operator];
   
     if (!mongoOp) throw new Error(`Unsupported operator: ${operator}`);
   
     if (operator === "contains") {
       return {
-        [field]: {
+        [fieldName]: {
           [mongoOp]: value,
           $options: "i", // case-insensitive regex
         },
@@ -25,7 +27,7 @@ const mongoOperators = {
     }
   
     return {
-      [field]: {
+      [fieldName]: {
         [mongoOp]: value,
       },
     };

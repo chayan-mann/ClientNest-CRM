@@ -7,7 +7,7 @@ const previewSegment = async (req, res) => {
 
     const mongoQuery = parseRuleToMongo({ rules, ruleOperator });
 
-    const customers = await CustomerModel.find(mongoQuery).select("name email"); // or whatever fields you want to preview
+    const customers = await CustomerModel.find(mongoQuery).select("name email"); 
     const audienceSize = customers.length;
 
     res.json({ audienceSize, customers });
