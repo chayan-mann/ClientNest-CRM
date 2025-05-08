@@ -55,41 +55,62 @@ export const getCampaignById = async (req, res) => {
     const campaign = await CampaignModel.findById(id);
     if (!campaign) return res.status(404).json({ message: "Campaign not found" });
 
-    const sentCount = await CommunicationLogModel.countDocuments({
-      campaignId: id,
-      status: "SENT",
+    const [sentCount, failedCount, recentLogs] = await Promise.all([
+      CommunicationLogModel.countDocuments({ campaignId: id, status: "SENT" }),
+      CommunicationLogModel.countDocuments({ campaignId: id, status: "FAILED" }),
+      CommunicationLogModel.find({ campaignId: id }).sort({ timestamp: -1 }).limit(5),
+    ]);
+
+    const customerIds = recentLogs.map(log => log.customerId);
+    const customers = await CustomerModel.find({ _id: { $in: customerIds } });
+    const customerMap = new Map(customers.map(c => [c._id.toString(), c]));
+
+    const deliveryStatus = recentLogs.map(log => {
+      const customer = customerMap.get(log.customerId.toString());
+      return {
+        name: customer?.name || "Unknown",
+        email: log.email || "N/A",
+        status: log.status,
+        timestamp: log.timestamp,
+      };
     });
-
-    const failedCount = await CommunicationLogModel.countDocuments({
-      campaignId: id,
-      status: "FAILED",
-    });
-
-    const recentLogs = await CommunicationLogModel.find({ campaignId: id })
-      .sort({ timestamp: -1 })
-      .limit(5);
-
-    const deliveryStatus = await Promise.all(
-      recentLogs.map(async (log) => {
-        const customer = await CustomerModel.findById(log.customerId);
-        return {
-          name: customer?.name || "Unknown",
-          email: log.email,
-          status: log.status,
-        };
-      })
-    );
 
     res.status(200).json({
       campaign,
-      stats: {
-        sent: sentCount,
-        failed: failedCount,
-      },
+      stats: { sent: sentCount, failed: failedCount },
       deliveryStatus,
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error fetching campaign" });
+  }
+};
+
+
+export const getCampaignLogs = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const logs = await CommunicationLogModel.find({ campaignId: id }).sort({ timestamp: -1 });
+
+    const customerIds = logs.map(log => log.customerId);
+    const customers = await CustomerModel.find({ _id: { $in: customerIds } });
+    const customerMap = new Map(customers.map(c => [c._id.toString(), c]));
+
+    const enrichedLogs = logs.map(log => {
+      const customer = customerMap.get(log.customerId.toString());
+      return {
+        name: customer?.name || "Unknown",
+        email: log.email || "N/A",
+        status: log.status,
+        timestamp: log.timestamp,
+        channel: log.channel,
+      };
+    });
+
+    res.status(200).json({ logs: enrichedLogs });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching logs for campaign" });
   }
 };

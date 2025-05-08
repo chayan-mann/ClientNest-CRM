@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { Eye } from "lucide-react"
@@ -8,100 +8,59 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Skeleton } from "@/components/ui/skeleton"
+import {toast} from "sonner"
 
-// Mock data for campaigns
-const mockCampaigns = [
-  {
-    id: "1",
-    name: "High Spenders Re-engagement",
-    rules: [
-      { field: "totalSpend", operator: ">", value: 10000 },
-      { field: "lastOrderDate", operator: "<", value: "2024-01-01" },
-    ],
-    ruleOperator: "AND",
-    createdAt: new Date("2024-04-15"),
-    stats: {
-      audienceSize: 1250,
-      messagesSent: 1230,
-      messagesFailed: 20,
-    },
-  },
-  {
-    id: "2",
-    name: "New Product Announcement",
-    rules: [
-      { field: "totalSpend", operator: ">", value: 5000 },
-      { field: "category", operator: "=", value: "Electronics" },
-    ],
-    ruleOperator: "AND",
-    createdAt: new Date("2024-04-10"),
-    stats: {
-      audienceSize: 850,
-      messagesSent: 842,
-      messagesFailed: 8,
-    },
-  },
-  {
-    id: "3",
-    name: "Dormant Customers",
-    rules: [{ field: "lastOrderDate", operator: "<", value: "2023-10-01" }],
-    ruleOperator: "AND",
-    createdAt: new Date("2024-04-05"),
-    stats: {
-      audienceSize: 320,
-      messagesSent: 315,
-      messagesFailed: 5,
-    },
-  },
-  {
-    id: "4",
-    name: "Loyalty Program Invitation",
-    rules: [
-      { field: "orderCount", operator: ">", value: 5 },
-      { field: "loyaltyMember", operator: "=", value: false },
-    ],
-    ruleOperator: "AND",
-    createdAt: new Date("2024-04-01"),
-    stats: {
-      audienceSize: 450,
-      messagesSent: 445,
-      messagesFailed: 5,
-    },
-  },
-  {
-    id: "5",
-    name: "Seasonal Sale Promotion",
-    rules: [
-      { field: "category", operator: "=", value: "Apparel" },
-      { field: "lastOrderDate", operator: ">", value: "2024-01-01" },
-    ],
-    ruleOperator: "OR",
-    createdAt: new Date("2024-03-25"),
-    stats: {
-      audienceSize: 1800,
-      messagesSent: 1780,
-      messagesFailed: 20,
-    },
-  },
-  {
-    id: "6",
-    name: "Cart Abandonment Recovery",
-    rules: [
-      { field: "abandonedCart", operator: "=", value: true },
-      { field: "cartValue", operator: ">", value: 1000 },
-    ],
-    ruleOperator: "AND",
-    createdAt: new Date("2024-03-20"),
-    stats: {
-      audienceSize: 210,
-      messagesSent: 205,
-      messagesFailed: 5,
-    },
-  },
-]
+export function CampaignList({ limit }) {
+  const [campaigns, setCampaigns] = useState([])
+  const [loading, setLoading] = useState(true)
 
-export function CampaignList({ limit } = {}) {
-  const [campaigns] = useState(limit ? mockCampaigns.slice(0, limit) : mockCampaigns)
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/newcampaign")
+
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        // Process the data to match our component's expected format
+        const processedCampaigns = data.map((campaign) => ({
+          id: campaign._id,
+          name: campaign.name,
+          rules: campaign.rules.map((rule) => ({
+            field: rule.key,
+            operator: rule.operator,
+            value: rule.value,
+          })),
+          ruleOperator: campaign.ruleOperator,
+          createdAt: new Date(campaign.createdAt || Date.now()),
+          stats: {
+            audienceSize: campaign.audienceSize || 0,
+            messagesSent: campaign.messagesSent || 0,
+            messagesFailed: campaign.messagesFailed || 0,
+          },
+        }))
+
+        setCampaigns(limit ? processedCampaigns.slice(0, limit) : processedCampaigns)
+      } catch (error) {
+        console.error("Error fetching campaigns:", error)
+        toast({
+          title: "Error fetching campaigns",
+          description: error instanceof Error ? error.message : "Failed to fetch campaigns",
+          variant: "destructive",
+        })
+        // Set empty array to avoid undefined errors
+        setCampaigns([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCampaigns()
+  }, [limit, toast])
 
   const formatRules = (campaign) => {
     return campaign.rules
@@ -109,6 +68,103 @@ export function CampaignList({ limit } = {}) {
         return `${rule.field} ${rule.operator} ${rule.value}`
       })
       .join(` ${campaign.ruleOperator} `)
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {limit ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array(limit)
+              .fill(0)
+              .map((_, i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <div className="grid grid-cols-3 gap-2">
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Skeleton className="h-9 w-full" />
+                  </CardFooter>
+                </Card>
+              ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Rules</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Audience</TableHead>
+                    <TableHead>Sent</TableHead>
+                    <TableHead>Failed</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array(5)
+                    .fill(0)
+                    .map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Skeleton className="h-5 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-48" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-24" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-12" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-12" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-12" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Skeleton className="h-8 w-8 ml-auto" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    )
+  }
+
+  if (campaigns.length === 0) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center p-6">
+          <div className="text-center text-muted-foreground">
+            <p>No campaigns found</p>
+            <p className="text-sm">Create your first campaign to get started</p>
+          </div>
+          <Button asChild className="mt-4">
+            <Link href="/dashboard/campaigns/new">Create Campaign</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -119,7 +175,7 @@ export function CampaignList({ limit } = {}) {
             <Card key={campaign.id}>
               <CardHeader>
                 <CardTitle>{campaign.name}</CardTitle>
-                <CardDescription>Created on {format(campaign.createdAt, "MMM d, yyyy")}</CardDescription>
+                <CardDescription>Created on {format(new Date(campaign.createdAt), "MMM d, yyyy")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -180,7 +236,7 @@ export function CampaignList({ limit } = {}) {
                         {formatRules(campaign)}
                       </div>
                     </TableCell>
-                    <TableCell>{format(campaign.createdAt, "MMM d, yyyy")}</TableCell>
+                    <TableCell>{format(new Date(campaign.createdAt), "MMM d, yyyy")}</TableCell>
                     <TableCell>{campaign.stats.audienceSize}</TableCell>
                     <TableCell>{campaign.stats.messagesSent}</TableCell>
                     <TableCell>{campaign.stats.messagesFailed}</TableCell>

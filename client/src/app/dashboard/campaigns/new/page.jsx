@@ -10,59 +10,137 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { RuleBuilder } from "@/components/rule-builder"
 import { VisualRuleBuilder } from "@/components/visual-rule-builder"
+import { Loader2 } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default function NewCampaignPage() {
   const router = useRouter()
   const [campaignName, setCampaignName] = useState("")
   const [rules, setRules] = useState([])
   const [ruleOperator, setRuleOperator] = useState("AND")
-  const [audienceSize, setAudienceSize] = useState(null)
+  const [previewResult, setPreviewResult] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
   const handleCreateCampaign = async () => {
     if (!campaignName) {
-      toast.error("Missing information", {
+      toast({
+        title: "Missing information",
         description: "Please provide a campaign name",
+        variant: "destructive",
       })
       return
     }
 
     if (rules.length === 0) {
-      toast.error("Missing rules", {
+      toast({
+        title: "Missing rules",
         description: "Please add at least one rule to your campaign",
+        variant: "destructive",
       })
       return
     }
 
     setIsLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      toast.success("Campaign created", {
+    try {
+      // Format the rules to match the expected API format
+      const formattedRules = rules.map((rule) => ({
+        key: rule.field,
+        operator: rule.operator,
+        value: rule.value,
+      }))
+
+      // Prepare the payload
+      const payload = {
+        name: campaignName,
+        ruleOperator,
+        rules: formattedRules,
+      }
+
+      // Make the API call
+      const response = await fetch("http://localhost:8000/api/newcampaign", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      toast({
+        title: "Campaign created",
         description: "Your campaign has been created successfully",
       })
-      setIsLoading(false)
+
       router.push("/dashboard/campaigns")
-    }, 1500)
+    } catch (error) {
+      console.error("Error creating campaign:", error)
+      toast({
+        title: "Error creating campaign",
+        description: error instanceof Error ? error.message : "Failed to create campaign",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const fetchAudienceSize = async () => {
     if (rules.length === 0) {
-      toast.error("Missing rules", {
+      toast({
+        title: "Missing rules",
         description: "Please add at least one rule to preview audience size",
+        variant: "destructive",
       })
       return
     }
 
     setIsLoading(true)
+    setPreviewResult(null)
 
-    // Simulate API call to get audience size
-    setTimeout(() => {
-      // Random number between 100 and 2000
-      const size = Math.floor(Math.random() * 1900) + 100
-      setAudienceSize(size)
+    try {
+      // Prepare the payload in the required format
+      const payload = {
+        rules: rules.map((rule) => ({
+          field: rule.field,
+          operator: rule.operator,
+          value: rule.value,
+        })),
+        ruleOperator,
+      }
+
+      // Make the API call
+      const response = await fetch("http://localhost:8000/api/campaigns/preview", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`)
+      }
+
+      const data = await response.json()
+      setPreviewResult(data)
+      setShowPreview(true)
+    } catch (error) {
+      console.error("Error fetching preview:", error)
+      toast({
+        title: "Error fetching preview",
+        description: error instanceof Error ? error.message : "Failed to fetch preview data",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -116,19 +194,57 @@ export default function NewCampaignPage() {
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Button variant="outline" onClick={fetchAudienceSize} disabled={isLoading || rules.length === 0}>
-            Preview Audience Size
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Previewing...
+              </>
+            ) : (
+              "Preview Audience"
+            )}
           </Button>
 
-          {audienceSize !== null && (
+          {previewResult && (
             <div className="text-sm">
               <span className="font-medium">Estimated audience size:</span>{" "}
-              <span className="text-primary">{audienceSize.toLocaleString()} customers</span>
+              <span className="text-primary">{previewResult.audienceSize.toLocaleString()} customers</span>
             </div>
           )}
         </div>
 
+        {showPreview && previewResult && (
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="mb-4 text-lg font-medium">Audience Preview</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {previewResult.customers.map((customer) => (
+                    <TableRow key={customer._id}>
+                      <TableCell className="font-medium">{customer.name}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
         <Button onClick={handleCreateCampaign} disabled={isLoading || !campaignName || rules.length === 0}>
-          Create Campaign
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Create Campaign"
+          )}
         </Button>
       </div>
     </div>
