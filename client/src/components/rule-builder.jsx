@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
-// Available fields for rules
 const fields = [
   { id: "totalSpend", name: "Total Spend" },
   { id: "lastOrderDate", name: "Last Order Date" },
@@ -65,9 +64,27 @@ export function RuleBuilder({ rules, setRules, ruleOperator, setRuleOperator }) 
     return operators[fieldType] || []
   }
 
+  const formatValueForFieldType = (fieldId, value) => {
+    const fieldType = fieldTypes[fieldId]
+    if (fieldType === "number") {
+      return Number(value)
+    }
+    if (fieldType === "boolean") {
+      return value === "true"
+    }
+    return value
+  }
+
   const addRule = () => {
     if (newRule.field && newRule.operator && newRule.value) {
-      setRules([...rules, { ...newRule }])
+      const formattedValue = formatValueForFieldType(newRule.field, newRule.value)
+      setRules([
+        ...rules,
+        {
+          ...newRule,
+          value: formattedValue,
+        },
+      ])
       setNewRule({ field: "", operator: "", value: "" })
     }
   }
@@ -80,7 +97,6 @@ export function RuleBuilder({ rules, setRules, ruleOperator, setRuleOperator }) 
 
   const renderValueInput = (fieldId) => {
     const fieldType = fieldTypes[fieldId]
-
     if (fieldType === "boolean") {
       return (
         <Select value={newRule.value} onValueChange={(value) => setNewRule({ ...newRule, value })}>
@@ -94,13 +110,11 @@ export function RuleBuilder({ rules, setRules, ruleOperator, setRuleOperator }) 
         </Select>
       )
     }
-
     if (fieldType === "date") {
       return (
         <Input type="date" value={newRule.value} onChange={(e) => setNewRule({ ...newRule, value: e.target.value })} />
       )
     }
-
     return (
       <Input
         type={fieldType === "number" ? "number" : "text"}
@@ -138,7 +152,8 @@ export function RuleBuilder({ rules, setRules, ruleOperator, setRuleOperator }) 
             {rules.map((rule, index) => (
               <div key={index} className="flex items-center gap-2 rounded-md border p-3">
                 <div className="flex-1 text-sm">
-                  {fields.find((f) => f.id === rule.field)?.name || rule.field} {rule.operator} {rule.value}
+                  {fields.find((f) => f.id === rule.field)?.name || rule.field} {rule.operator}{" "}
+                  {typeof rule.value === "boolean" ? (rule.value ? "True" : "False") : rule.value}
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => removeRule(index)}>
                   <Trash2 className="h-4 w-4" />

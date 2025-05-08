@@ -35,7 +35,7 @@ async function listenStream(streamName, Model) {
           const { id, message } = msg;
 
           try {
-            const data = JSON.parse(message.data); // assuming data is a stringified JSON
+            const data = JSON.parse(message.data);
             await Model.create(data);
             console.log(`✅ [${streamName}] Inserted document with ID: ${id}`);
           } catch (err) {

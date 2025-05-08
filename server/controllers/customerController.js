@@ -2,7 +2,8 @@ import redisClient from '../services/redisClient.js';
 
 export async function createCustomer(req, res) {
   try {
-    const { name, email, phone, totalSpend, visits, lastActiveDate } = req.body;
+    const { name, email, phone,  visits, totalSpend, orderCount, lastOrderDate, category, loyaltyMember,
+      abandonedCart, cartValue} = req.body;
 
     // Basic validation
     if (!name || !email) {
@@ -15,7 +16,13 @@ export async function createCustomer(req, res) {
       phone: phone || '',
       totalSpend: totalSpend || 0,
       visits: visits || 0,
-      lastActiveDate: lastActiveDate || new Date().toISOString(),
+      totalSpend,
+      orderCount,
+      lastOrderDate : lastOrderDate || new Date().toISOString(),
+      category,
+      loyaltyMember,
+      abandonedCart,
+      cartValue,
       createdAt: new Date().toISOString()
     };
 

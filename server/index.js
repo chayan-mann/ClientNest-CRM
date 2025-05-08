@@ -1,17 +1,31 @@
 import express from 'express'
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
+import axios from "axios";
+
 import customerRouter from './routes/customerRoute.js';
 import orderRouter from './routes/orderRoute.js';
+import preview from './routes/previewSegmentRouter.js';
 
 dotenv.config();
 const app = express();
 
-app.use(express.json()); // Parse JSON bodies
+app.use(express.json()); 
+
+app.use(
+  cors({
+    origin:"http://localhost:3000",
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS',],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, 
+  })
+);
+
 
 app.use("/api/customers", customerRouter)
 app.use("/api/orders", orderRouter)
-
+app.use("/api/campaigns", preview)
 
 app.get("/", (req, res) => {
     res.send({ success: true, message: "server up!" });

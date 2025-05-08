@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useCallback } from "react"
 
 // Available fields for rules
 const fields = [
@@ -80,10 +81,17 @@ const RuleItem = ({ rule, index, moveRule, updateRule, removeRule }) => {
 
   const renderValueInput = (fieldId, value) => {
     const fieldType = fieldTypes[fieldId]
+    const stringValue = value?.toString() || ""
 
     if (fieldType === "boolean") {
       return (
-        <Select value={value} onValueChange={(newValue) => updateRule(index, "value", newValue)}>
+        <Select
+          value={stringValue}
+          onValueChange={(newValue) => {
+            const formattedValue = newValue === "true"
+            updateRule(index, "value", formattedValue)
+          }}
+        >
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Select value" />
           </SelectTrigger>
@@ -99,7 +107,7 @@ const RuleItem = ({ rule, index, moveRule, updateRule, removeRule }) => {
       return (
         <Input
           type="date"
-          value={value}
+          value={stringValue}
           onChange={(e) => updateRule(index, "value", e.target.value)}
           className="w-[150px]"
         />
@@ -110,8 +118,11 @@ const RuleItem = ({ rule, index, moveRule, updateRule, removeRule }) => {
       <Input
         type={fieldType === "number" ? "number" : "text"}
         placeholder="Enter value"
-        value={value}
-        onChange={(e) => updateRule(index, "value", e.target.value)}
+        value={stringValue}
+        onChange={(e) => {
+          const newValue = fieldType === "number" ? Number(e.target.value) : e.target.value
+          updateRule(index, "value", newValue)
+        }}
         className="w-[150px]"
       />
     )
@@ -127,7 +138,21 @@ const RuleItem = ({ rule, index, moveRule, updateRule, removeRule }) => {
       </div>
 
       <div className="flex flex-1 flex-wrap items-center gap-2">
-        <Select value={rule.field} onValueChange={(value) => updateRule(index, "field", value)}>
+        <Select
+          value={rule.field}
+          onValueChange={(value) => {
+            // Reset the value when field type changes
+            updateRule(index, "field", value)
+            updateRule(index, "operator", getOperatorsForField(value)[0]?.id || "")
+
+            const fieldType = fieldTypes[value]
+            let defaultValue = ""
+            if (fieldType === "boolean") defaultValue = "false"
+            if (fieldType === "number") defaultValue = 0
+
+            updateRule(index, "value", defaultValue)
+          }}
+        >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Select field" />
           </SelectTrigger>
@@ -165,29 +190,29 @@ const RuleItem = ({ rule, index, moveRule, updateRule, removeRule }) => {
 }
 
 export function VisualRuleBuilder({ rules, setRules, ruleOperator, setRuleOperator }) {
-  const moveRule = (dragIndex, hoverIndex) => {
+  const moveRule = useCallback((dragIndex, hoverIndex) => {
     const dragRule = rules[dragIndex]
     const newRules = [...rules]
     newRules.splice(dragIndex, 1)
     newRules.splice(hoverIndex, 0, dragRule)
     setRules(newRules)
-  }
+  }, [rules, setRules])
 
-  const updateRule = (index, field, value) => {
+  const updateRule = useCallback((index, field, value) => {
     const newRules = [...rules]
     newRules[index] = { ...newRules[index], [field]: value }
     setRules(newRules)
-  }
+  }, [rules, setRules])
 
-  const removeRule = (index) => {
+  const removeRule = useCallback((index) => {
     const newRules = [...rules]
     newRules.splice(index, 1)
     setRules(newRules)
-  }
+  }, [rules, setRules])
 
-  const addRule = () => {
-    setRules([...rules, { field: "totalSpend", operator: ">", value: "1000" }])
-  }
+  const addRule = useCallback(() => {
+    setRules([...rules, { field: "totalSpend", operator: ">", value: 1000 }])
+  }, [rules, setRules])
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -261,7 +286,8 @@ export function VisualRuleBuilder({ rules, setRules, ruleOperator, setRuleOperat
               {rules.map((rule, index) => (
                 <span key={index}>
                   <span>
-                    {fields.find((f) => f.id === rule.field)?.name || rule.field} {rule.operator} {rule.value}
+                    {fields.find((f) => f.id === rule.field)?.name || rule.field} {rule.operator}{" "}
+                    {typeof rule.value === "boolean" ? (rule.value ? "True" : "False") : rule.value}
                   </span>
                   {index < rules.length - 1 && (
                     <span className="mx-2 font-medium text-muted-foreground">{ruleOperator}</span>

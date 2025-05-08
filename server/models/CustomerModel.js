@@ -1,29 +1,22 @@
 import mongoose from "mongoose";
 
 const customerSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
+  name: String,
+  email: String,
   phone: String,
-  totalSpend: {
+  visits : {
     type: Number,
-    default: 0,
+    default : 0
   },
-  visits: {
-    type: Number,
-    default: 0,
-  },
-  lastActiveDate: Date,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  }
+  totalSpend: { type: Number, default: 0 },            
+  orderCount: { type: Number, default: 0 },            
+  lastOrderDate: { type: Date },                       
+  category: { type: String },                          
+  loyaltyMember: { type: Boolean, default: false },    
+  abandonedCart: { type: Boolean, default: false },    
+  cartValue: { type: Number, default: 0 },             
+
+  createdAt: { type: Date, default: Date.now }
 });
 const CustomerModel = mongoose.model('Customer', customerSchema);
 export default CustomerModel
