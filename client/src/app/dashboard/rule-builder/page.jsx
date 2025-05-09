@@ -52,9 +52,7 @@ export default function RuleBuilderPage() {
         ruleOperator,
       }
 
-      // Make the API call
-      // Note: Using a relative path or environment variable is recommended instead of hardcoding localhost
-      const response = await fetch("http://localhost:8000/api/campaigns/preview", { // Changed to relative path
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/campaigns/preview`, { 
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -59,7 +59,7 @@ export default function NewCampaignPage() {
       }
 
       // Make the API call
-      const response = await fetch("http://localhost:8000/api/newcampaign", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/newcampaign`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +116,7 @@ export default function NewCampaignPage() {
       }
 
       // Make the API call
-      const response = await fetch("http://localhost:8000/api/campaigns/preview", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/campaigns/preview`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

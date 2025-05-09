@@ -18,7 +18,7 @@ export function CampaignList({ limit }) {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/newcampaign")
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/newcampaign/`)
 
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`)

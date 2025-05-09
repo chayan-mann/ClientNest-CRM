@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
-import { useRouter,useParams } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useParams } from "next/navigation"
 import { format } from "date-fns"
 import { ArrowLeft, Send, AlertTriangle, CheckCircle, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,9 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
+import { CampaignSummary } from "@/components/campaign-summary"
 
 export default function CampaignDetailsPage() {
-  const params = useParams()
+  const params = useParams(); 
   const router = useRouter()
   const [campaign, setCampaign] = useState(null)
   const [communicationLogs, setCommunicationLogs] = useState([])
@@ -23,8 +24,9 @@ export default function CampaignDetailsPage() {
   useEffect(() => {
     const fetchCampaignDetails = async () => {
       try {
-        const id = params.id;
-        const campaignResponse = await fetch(`http://localhost:8000/api/newcampaign/${id}`)
+        const id = params.id
+        // Fetch campaign details
+        const campaignResponse = await fetch(`http://localhost:8000/api/newcampaign/${params.id}`)
 
         if (!campaignResponse.ok) {
           throw new Error(`Campaign API request failed with status ${campaignResponse.status}`)
@@ -172,6 +174,11 @@ export default function CampaignDetailsPage() {
           </Button>
           <h2 className="text-2xl font-bold tracking-tight">{campaign.name}</h2>
           <p className="text-muted-foreground">Created on {format(new Date(campaign.createdAt), "MMMM d, yyyy")}</p>
+        </div>
+
+        {/* AI Campaign Summary Button */}
+        <div>
+          <CampaignSummary campaign={campaign} logs={communicationLogs} />
         </div>
       </div>
 
