@@ -2,17 +2,16 @@ import redisClient from '../services/redisClient.js';
 
 export async function createOrder(req, res) {
   try {
-    const { customerId, amount, products, orderDate, status } = req.body;
+    const { customerId, amount, orderDate, status } = req.body;
 
     // Basic validation
-    if (!customerId || !amount || !Array.isArray(products)) {
+    if (!customerId || !amount ) {
       return res.status(400).json({ error: 'customerId, amount, and products are required.' });
     }
 
     const orderData = {
       customerId,
       amount,
-      products,
       orderDate: orderDate || new Date().toISOString(),
       status: status || 'PENDING'
     };

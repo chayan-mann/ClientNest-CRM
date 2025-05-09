@@ -74,18 +74,23 @@ export default function NewCampaignPage() {
 
       const data = await response.json()
 
-      toast({
-        title: "Campaign created",
+      // toast({
+      //   title: "Campaign created",
+      //   description: "Your campaign has been created successfully",
+      // })
+      toast("Campaign created successfully", {
         description: "Your campaign has been created successfully",
+        action: {
+          label: "Undo",
+          onClick: () => console.log("Undo action triggered"),
+        },
       })
 
       router.push("/dashboard/campaigns")
     } catch (error) {
       console.error("Error creating campaign:", error)
-      toast({
-        title: "Error creating campaign",
-        description: error instanceof Error ? error.message : "Failed to create campaign",
-        variant: "destructive",
+      toast("Error creating campaign", {
+        description: typeof error?.message === "string" ? error.message : "Failed to create campaign",
       })
     } finally {
       setIsLoading(false)
@@ -94,10 +99,8 @@ export default function NewCampaignPage() {
 
   const fetchAudienceSize = async () => {
     if (rules.length === 0) {
-      toast({
-        title: "Missing rules",
+      toast("Missing rules",{
         description: "Please add at least one rule to preview audience size",
-        variant: "destructive",
       })
       return
     }
@@ -106,7 +109,7 @@ export default function NewCampaignPage() {
     setPreviewResult(null)
 
     try {
-      // Prepare the payload in the required format
+      // Prepare payload in the required format
       const payload = {
         rules: rules.map((rule) => ({
           field: rule.field,
@@ -116,7 +119,6 @@ export default function NewCampaignPage() {
         ruleOperator,
       }
 
-      // Make the API call
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/campaigns/preview`, {
         method: "POST",
         headers: {
@@ -144,13 +146,15 @@ export default function NewCampaignPage() {
     }
   }
 
-  // Handler for selecting a suggested campaign name
   const handleSelectName = (name) => {
     setCampaignName(name)
-    toast({
-      title: "Campaign name selected",
-      description: `"${name}" has been set as your campaign name.`,
-    })
+    toast("Campaign name selected", {
+      description: `${name} has been set as your campaign name.`,
+        action: {
+        label: "Undo",
+        onClick: () => console.log("Undo action triggered"),
+      },
+    });
   }
 
   return (

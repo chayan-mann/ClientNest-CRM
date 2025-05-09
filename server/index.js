@@ -19,7 +19,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin:"http://localhost:3000",
+    origin: process.env.FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS',],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, 
@@ -42,7 +42,6 @@ app.get("/", (req, res) => {
 //DATABASE CONNECTION
 mongoose
   .connect(`${process.env.MONGO_URL}`)
-  //const PORT = process.env.PORT || 8000;
   .then(() => {
     app.listen(process.env.PORT || 8000, () => {
       console.log(

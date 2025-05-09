@@ -88,10 +88,10 @@ export function CampaignNameSuggestions({ rules, ruleOperator, onSelectName }) {
                   key={index}
                   variant="outline"
                   className="w-full justify-start text-left flex flex-col items-start"
-                //   onClick={() => {
-                //     console.log("Selected title:", title);
-                //     onSelectName(title);
-                //   }}
+                  onClick={() => {
+                    console.log("Selected title:", title);
+                    onSelectName(title);
+                  }}
                 >
                   <span className="font-semibold">
                     {typeof title === "string" ? title : JSON.stringify(title)}
