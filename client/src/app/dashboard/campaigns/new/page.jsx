@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { RuleBuilder } from "@/components/rule-builder"
 import { VisualRuleBuilder } from "@/components/visual-rule-builder"
+import { CampaignNameSuggestions } from "@/components/campaign-name-suggestions"
 import { Loader2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
@@ -143,6 +144,15 @@ export default function NewCampaignPage() {
     }
   }
 
+  // Handler for selecting a suggested campaign name
+  const handleSelectName = (name) => {
+    setCampaignName(name)
+    toast({
+      title: "Campaign name selected",
+      description: `"${name}" has been set as your campaign name.`,
+    })
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -159,6 +169,11 @@ export default function NewCampaignPage() {
             value={campaignName}
             onChange={(e) => setCampaignName(e.target.value)}
           />
+
+          {/* AI Campaign Name Suggestions */}
+          {rules.length > 0 && (
+            <CampaignNameSuggestions rules={rules} ruleOperator={ruleOperator} onSelectName={handleSelectName} />
+          )}
         </div>
 
         <Tabs defaultValue="standard">

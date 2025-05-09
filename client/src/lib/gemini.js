@@ -1,7 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
-// Initialize the Google Generative AI with your API key
-// In a production environment, this should be stored as an environment variable
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "YOUR_API_KEY")
 
 // Function to generate campaign name suggestions based on rules
@@ -22,7 +20,8 @@ export async function generateCampaignNameSuggestions(rules, ruleOperator) {
       ${rulesText}
 
       Please suggest 3 creative and professional campaign names that reflect these targeting criteria.
-      Format your response as a JSON array of strings, like this: ["Name 1", "Name 2", "Name 3"]
+      Format your response as a JSON array of strings or objects like this:
+      ["Name 1", "Name 2", "Name 3"] or [{"title": "Name 1", "description": "optional info"}, ...]
       Only include the JSON array in your response, nothing else.
     `
 
@@ -34,16 +33,32 @@ export async function generateCampaignNameSuggestions(rules, ruleOperator) {
     const response = await result.response
     const text = response.text()
 
-    // Parse the JSON response
+    // Parse the JSON response safely
     try {
-      return JSON.parse(text)
+      const parsed = JSON.parse(text)
+      const titles = parsed.map(item =>
+        typeof item === "string"
+          ? item
+          : item?.title || JSON.stringify(item)
+      )
+      return titles
     } catch (e) {
-      // If parsing fails, try to extract the array from the text
+      // Try extracting the array content manually
       const match = text.match(/\[(.*)\]/s)
       if (match) {
-        return JSON.parse(`[${match[1]}]`)
+        try {
+          const parsed = JSON.parse(`[${match[1]}]`)
+          const titles = parsed.map(item =>
+            typeof item === "string"
+              ? item
+              : item?.title || JSON.stringify(item)
+          )
+          return titles
+        } catch {
+          return ["Campaign " + new Date().toLocaleDateString()]
+        }
       }
-      // Return a default array if all else fails
+      // Fallback default name
       return ["Campaign " + new Date().toLocaleDateString()]
     }
   } catch (error) {
@@ -51,6 +66,7 @@ export async function generateCampaignNameSuggestions(rules, ruleOperator) {
     return ["Campaign " + new Date().toLocaleDateString()]
   }
 }
+
 
 // Function to generate a campaign summary
 export async function generateCampaignSummary(campaign, logs) {
