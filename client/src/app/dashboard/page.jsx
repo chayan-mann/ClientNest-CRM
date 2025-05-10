@@ -22,7 +22,8 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const res = await fetch(joinUrl(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/dashboard`))
+        const url = joinUrl(process.env.NEXT_PUBLIC_BACKEND_URL, '/api/dashboard');
+        const res = await fetch(url);
         const data = await res.json()
         setStats(data)
       } catch (err) {
