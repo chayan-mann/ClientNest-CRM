@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusCircle, Users, Send, AlertTriangle } from "lucide-react"
 import { CampaignList } from "@/components/campaign-list"
-
+import { joinUrl } from "@/lib/join"
 export default function DashboardPage() {
   const [stats, setStats] = useState({
     totalCampaigns: 0,
@@ -22,7 +22,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/dashboard`)
+        const res = await fetch(joinUrl(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/dashboard`))
         const data = await res.json()
         setStats(data)
       } catch (err) {
