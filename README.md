@@ -93,7 +93,7 @@ This project is a Mini CRM Platform built as part of the Xeno SDE Internship Ass
 *   **API Documentation:**
     *   Swagger (OpenAPI)
 *   **AI:**
-    *   Google Gemini API (for message generation)
+    *   Google Gemini API (for campaign summarization and campaign name suggestion.)
 *   **Development Tools:**
     *   VS Code
     *   Git & GitHub
@@ -102,18 +102,33 @@ This project is a Mini CRM Platform built as part of the Xeno SDE Internship Ass
 
 ## Architecture Diagram
 
-![Architecture Diagram]()
+![Architecture Diagram](./architecture.png)
+
+**🔐 Authentication:**
+Users log in via Google OAuth2.
+
+**🖥️ Frontend:**
+UI for Dashboard, Campaign Creation, and History.
+Interacts with the backend to view data and trigger campaigns.
+
+**🧠 Backend (REST API):**
+Manages campaigns, orders, customers, and delivery receipts.
+Publishes campaign tasks to Redis Streams.
+
+**🔄 Pub/Sub Layer:**
+Redis Stream used for queuing campaign and customer/order events.
+
+**⚙️ Workers:**
+CampaignWorker.js: Processes new campaigns, finds target customers.
+StreamConsumer.js: Sends customers/orders asynchronously to backend database via pub-sub architecture.
+
+**🗃️ Data Store:**
+MongoDB stores customers, campaigns, and message logs.
+
+**📡 Vendor API:**
+Simulates message delivery and sends status updates.
 
 
-A high-level overview:
-*   **Client (Browser):** User interacts with the Next.js frontend.
-*   **Frontend (Next.js Server):** Serves the React application, handles client-side routing, and makes API calls to the backend. Also includes Next.js API routes for specific frontend needs (e.g., AI message generation proxy).
-*   **Backend (Node.js/Express API):** Handles business logic, data validation, database interactions, and authentication.
-*   **Database (MongoDB):** Stores customer data, orders, segment rules, campaigns, users, and delivery logs.
-*   **Google OAuth 2.0:** For user authentication.
-*   **External AI Service (Gemini):** Called by the backend (or a secure frontend API route) for AI features.
-
----
 
 ## Getting Started
 
