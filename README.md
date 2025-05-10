@@ -26,14 +26,15 @@ This project is a Mini CRM Platform built as part of the Xeno SDE Internship Ass
 
 ## Live Demo
 
-[Frontend Link]()
-[Backend Link]()
+[Frontend Link](https://clientnest-crm.vercel.app)
+[Backend Link](https://clientnest-crm.onrender.com)
+Wait for 30secs to 1min after opening backend link, then open frontend link for full functioning.
 
 ---
 
 ## Demo Video
 
-[Demo Video Link]() 
+[Demo Video Link](https://drive.google.com/file/d/1aK3A5pTvoI1wPy2PxBjrsLkiILPjd8VF/view?usp=sharing) 
 
 ---
 
