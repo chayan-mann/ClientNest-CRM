@@ -26,7 +26,7 @@ export default function CampaignDetailsPage() {
       try {
         const id = params.id
         // Fetch campaign details
-        const campaignResponse = await fetch(`process.env.NEXT_PUBLIC_BACKEND_URL/api/newcampaign/${params.id}`)
+        const campaignResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/newcampaign/${params.id}`)
 
         if (!campaignResponse.ok) {
           throw new Error(`Campaign API request failed with status ${campaignResponse.status}`)
