@@ -26,8 +26,8 @@ This project is a Mini CRM Platform built as part of the Xeno SDE Internship Ass
 
 ## Live Demo
 
-[Frontend Link](https://clientnest-crm.vercel.app)
-[Backend Link](https://clientnest-crm.onrender.com)
+[Frontend Link](https://clientnest-crm.vercel.app) <br>
+[Backend Link](https://clientnest-crm.onrender.com)<br>
 Wait for 30secs to 1min after opening backend link, then open frontend link for full functioning.
 
 ---
@@ -164,7 +164,7 @@ Follow these instructions to set up and run the project locally.
 
 4.  **Run the backend server:**
     ```bash
-    npm run server
+    npm run dev
     ```
     The backend server should start, typically on `http://localhost:8000`.
 
@@ -243,7 +243,6 @@ This interface allows you to view all available API endpoints, their request/res
 *   **AI Features:** AI integration is currently limited to campaign summarization and suggesting campaign names according to the rules applied. Other suggested AI use cases (Natural Language to Segment Rules, Performance Summarization, etc.) are not implemented.
 *   **Error Handling:** While basic error handling is in place, more granular error feedback to the user and comprehensive backend logging could be improved.
 *   **Testing:** No automated unit or integration tests are included in the current version.
-*   
 
 ---
 
