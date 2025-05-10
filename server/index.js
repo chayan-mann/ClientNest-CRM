@@ -11,11 +11,14 @@ import campaignRouter from "./routes/campaignRoute.js"
 import vendorRouter from "./routes/vendorRoute.js"
 import mockVendorRouter from "./routes/mockVendorRoute.js"
 import dashboardStatsRouter from './routes/dashboardStatsRoute.js';
+import { setupSwagger } from "./docs/swagger.js";
 
 dotenv.config();
 const app = express();
 
 app.use(express.json()); 
+
+setupSwagger(app); 
 
 app.use(
   cors({
@@ -47,6 +50,7 @@ mongoose
       console.log(
         `App listening on port http://localhost:${process.env.PORT}/ -> db connected.`
       );
+      console.log(`Swagger docs at http://localhost:${process.env.PORT}/api-docs`)
     });
   })
   .catch((err) => {
